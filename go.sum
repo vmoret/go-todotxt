@@ -1,0 +1,4 @@
+github.com/pborman/getopt v0.0.0-20190409184431-ee0cd42419d3 h1:YtFkrqsMEj7YqpIhRteVxJxCeC3jJBieuLr0d4C4rSA=
+github.com/pborman/getopt v0.0.0-20190409184431-ee0cd42419d3/go.mod h1:85jBQOZwpVEaDAr341tbn15RS4fCAsIst0qp7i8ex1o=
+gopkg.in/gookit/color.v1 v1.1.6 h1:5fB10p6AUFjhd2ayq9JgmJWr9WlTrguFdw3qlYtKNHk=
+gopkg.in/gookit/color.v1 v1.1.6/go.mod h1:IcEkFGaveVShJ+j8ew+jwe9epHyGpJ9IrptHmW3laVY=
