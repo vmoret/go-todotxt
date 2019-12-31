@@ -61,6 +61,8 @@ func (t *Task) UnmarshalText(text []byte) error {
 	if len(matches) == 1 {
 		t.Priority = priority.Priority([]rune(string(matches[0][1]))[0])
 		text = text[len(matches[0][0]):]
+	} else {
+		t.Priority = priority.NoPriority
 	}
 	dates := [2]date.Date{date.ZeroDate, date.ZeroDate}
 	for i := range dates {
@@ -104,10 +106,16 @@ func (t *Task) String() string {
 	if err != nil {
 		return err.Error()
 	}
+	return string(b)
+}
+
+// Render renders the task as string.
+func (t *Task) Render() string {
+	s := t.String()
 	if t.Completed {
-		return completedRender(string(b))
+		return completedRender(s)
 	}
-	return t.Priority.Render(string(b))
+	return t.Priority.Render(s)
 }
 
 // Tasks represents a collection of tasks.
@@ -147,3 +155,10 @@ func (tasks Tasks) Encode(w io.Writer) error {
 	}
 	return nil
 }
+
+// ByString implements sort.Interface based on String field.
+type ByString Tasks
+
+func (a ByString) Len() int           { return len(a) }
+func (a ByString) Less(i, j int) bool { return a[i].String() < a[j].String() }
+func (a ByString) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

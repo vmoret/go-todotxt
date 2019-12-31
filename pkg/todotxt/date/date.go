@@ -12,6 +12,11 @@ type Date time.Time
 // ZeroDate represents the zero date instant
 var ZeroDate Date
 
+// Now returns the current local date.
+func Now() Date {
+	return Date(time.Now())
+}
+
 // Parse parses date from string s.
 func Parse(s string) Date {
 	t, err := time.Parse(dateLayout, s)

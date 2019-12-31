@@ -16,7 +16,7 @@ var (
 type Priority rune
 
 // NoPriority indicates no priority
-var NoPriority Priority
+var NoPriority Priority = Priority(91)
 
 // Validate validates the priority rune
 func (p Priority) Validate() error {

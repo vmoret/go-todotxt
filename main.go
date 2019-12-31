@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/pborman/getopt/v2"
 	"github.com/vmoret/todotxt/pkg/todotxt"
+	"github.com/vmoret/todotxt/pkg/todotxt/date"
 )
 
 const (
@@ -19,11 +21,10 @@ const (
 )
 
 var (
-	force  = getopt.BoolLong("force", 'F', "Forces actions without confirmation or interactive input.")
-	help   = getopt.Bool('h', "Display a short help message.")
-	plain  = getopt.Bool('p', "Plain mode turns off colors.")
-	notime = getopt.Bool('t', "Do not prepend the current date to a task when it's added.")
-	file   = getopt.StringLong("file", 'f', DefaultTodoFile, "Add task to this file instead to default file.")
+	force = getopt.BoolLong("force", 'F', "Forces actions without confirmation or interactive input.")
+	help  = getopt.Bool('h', "Display a short help message.")
+	plain = getopt.Bool('p', "Plain mode turns off colors.")
+	file  = getopt.StringLong("file", 'f', DefaultTodoFile, "Add task to this file instead to default file.")
 )
 
 func main() {
@@ -53,14 +54,22 @@ func main() {
 		s := strings.Join(args[1:], " ")
 		task, err := todotxt.DecodeTask(s)
 		handleError(err)
+		task.CreationDate = date.Now()
 		tasks = append(tasks, task)
 		err = todotxt.WriteFile(path, tasks)
 		handleError(err)
-		fallthrough
+		for i, t := range tasks {
+			fmt.Fprintf(os.Stdout, "%d %s\n", i, t.Render())
+		}
+
+	case "sort":
+		sort.Sort(todotxt.ByString(tasks))
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
 
 	case "list":
 		for i, t := range tasks {
-			fmt.Fprintf(os.Stdout, "%d %s\n", i, t)
+			fmt.Fprintf(os.Stdout, "%d %s\n", i, t.Render())
 		}
 	}
 }
