@@ -3,6 +3,7 @@ package todotxt
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"regexp"
 
@@ -30,23 +31,50 @@ func DecodeTask(s string) (task *Task, err error) {
 
 // Task represents a task.
 type Task struct {
-	Completed      bool
-	Priority       priority.Priority
-	CompletionDate date.Date
-	CreationDate   date.Date
-	Description    token.Tokens
+	completed      bool
+	priority       priority.Priority
+	completionDate date.Date
+	creationDate   date.Date
+	description    token.Tokens
+}
+
+// NewTask creates a new task from string s.
+func NewTask(s string) (*Task, error) {
+	task, err := DecodeTask(s)
+	task.creationDate = date.Now()
+	return task, err
+}
+
+// MarkCompleted marks the task as completed.
+func (t *Task) MarkCompleted() error {
+	t.completed = true
+	if !t.creationDate.IsZero() {
+		t.completionDate = date.Now()
+	}
+	if !t.priority.IsZero() {
+		t.description = append(t.description, &token.Token{
+			Type: token.KeyValueTag, Key: []byte("pri"), Value: t.priority.Bytes()})
+		t.priority = priority.ZeroPriority
+	}
+	return nil
+}
+
+// SetPriority sets the priority of the task
+func (t *Task) SetPriority(p priority.Priority) error {
+	t.priority = p
+	return nil
 }
 
 // Validate a task
 func (t *Task) Validate() error {
-	if err := t.Priority.Validate(); err != nil {
+	if err := t.priority.Validate(); err != nil {
 		return err
 	}
-	if t.CompletionDate.IsZero() && !t.Completed {
-		t.CompletionDate = date.ZeroDate
+	if !t.completionDate.IsZero() && !t.completed {
+		t.completionDate = date.ZeroDate
 	}
-	if t.Completed && t.CompletionDate.IsZero() && t.CreationDate.IsZero() {
-		t.CompletionDate = date.ZeroDate
+	if t.completed && t.completionDate.IsZero() && t.creationDate.IsZero() {
+		t.completionDate = date.ZeroDate
 	}
 	return nil
 }
@@ -54,15 +82,15 @@ func (t *Task) Validate() error {
 // UnmarshalText implements TextUnmarshaler
 func (t *Task) UnmarshalText(text []byte) error {
 	if bytes.HasPrefix(text, []byte("x ")) {
-		t.Completed = true
+		t.completed = true
 		text = text[2:]
 	}
 	matches := priorityRe.FindAllSubmatch(text, -1)
 	if len(matches) == 1 {
-		t.Priority = priority.Priority([]rune(string(matches[0][1]))[0])
+		t.priority = priority.Priority([]rune(string(matches[0][1]))[0])
 		text = text[len(matches[0][0]):]
 	} else {
-		t.Priority = priority.NoPriority
+		t.priority = priority.ZeroPriority
 	}
 	dates := [2]date.Date{date.ZeroDate, date.ZeroDate}
 	for i := range dates {
@@ -72,13 +100,13 @@ func (t *Task) UnmarshalText(text []byte) error {
 			text = text[len(matches[0][0]):]
 		}
 	}
-	if t.Completed {
-		t.CompletionDate = dates[0]
-		t.CreationDate = dates[1]
+	if t.completed {
+		t.completionDate = dates[0]
+		t.creationDate = dates[1]
 	} else {
-		t.CreationDate = dates[0]
+		t.creationDate = dates[0]
 	}
-	t.Description.UnmarshalText(text)
+	t.description.UnmarshalText(text)
 	return nil
 }
 
@@ -88,13 +116,13 @@ func (t *Task) MarshalText() (text []byte, err error) {
 		return nil, err
 	}
 	buf := bytes.NewBufferString("")
-	if t.Completed {
+	if t.completed {
 		buf.WriteString("x ")
 	}
-	buf.WriteString(t.Priority.String())
-	buf.WriteString(t.CompletionDate.String())
-	buf.WriteString(t.CreationDate.String())
-	b, _ := t.Description.MarshalText()
+	buf.WriteString(t.priority.String())
+	buf.WriteString(t.completionDate.String())
+	buf.WriteString(t.creationDate.String())
+	b, _ := t.description.MarshalText()
 	buf.Write(b)
 	return buf.Bytes(), nil
 }
@@ -112,10 +140,10 @@ func (t *Task) String() string {
 // Render renders the task as string.
 func (t *Task) Render() string {
 	s := t.String()
-	if t.Completed {
+	if t.completed {
 		return completedRender(s)
 	}
-	return t.Priority.Render(s)
+	return t.priority.Render(s)
 }
 
 // Tasks represents a collection of tasks.
@@ -154,6 +182,18 @@ func (tasks Tasks) Encode(w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+// Add adds given task to the collection
+func (tasks *Tasks) Add(task *Task) {
+	*tasks = append(*tasks, task)
+}
+
+// Fprint prints the tasks to given writer
+func (tasks Tasks) Fprint(w io.Writer) {
+	for i, t := range tasks {
+		fmt.Fprintf(w, "%d %s\n", i, t.Render())
+	}
 }
 
 // ByString implements sort.Interface based on String field.

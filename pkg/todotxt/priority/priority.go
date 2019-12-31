@@ -15,12 +15,12 @@ var (
 // Priority represents a task priority
 type Priority rune
 
-// NoPriority indicates no priority
-var NoPriority Priority = Priority(91)
+// ZeroPriority indicates no priority
+var ZeroPriority Priority = Priority(91)
 
 // Validate validates the priority rune
 func (p Priority) Validate() error {
-	if p == NoPriority {
+	if p == ZeroPriority {
 		return nil
 	}
 	if p < 65 || p > 90 {
@@ -29,8 +29,16 @@ func (p Priority) Validate() error {
 	return nil
 }
 
+// IsZero indicates this priority is zero.
+func (p Priority) IsZero() bool { return p == ZeroPriority }
+
+// Bytes returns a bytes representation of this priority
+func (p Priority) Bytes() []byte {
+	return []byte(fmt.Sprintf("%c", p))
+}
+
 func (p Priority) String() string {
-	if p == NoPriority {
+	if p == ZeroPriority {
 		return ""
 	}
 	return fmt.Sprintf("(%c) ", p)
@@ -47,7 +55,7 @@ var (
 
 func init() {
 	renderers = make(map[Priority]func(a ...interface{}) string, 0)
-	renderers[NoPriority] = color.FgBlack.Render
+	renderers[ZeroPriority] = color.FgBlack.Render
 	renderers[Priority('A')] = color.FgYellow.Render
 	renderers[Priority('B')] = color.FgGreen.Render
 	renderers[Priority('C')] = color.FgLightBlue.Render

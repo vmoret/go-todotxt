@@ -10,7 +10,6 @@ import (
 
 	"github.com/pborman/getopt/v2"
 	"github.com/vmoret/todotxt/pkg/todotxt"
-	"github.com/vmoret/todotxt/pkg/todotxt/date"
 )
 
 const (
@@ -51,16 +50,12 @@ func main() {
 
 	switch action := strings.ToLower(args[0]); action {
 	case "add":
-		s := strings.Join(args[1:], " ")
-		task, err := todotxt.DecodeTask(s)
+		task, err := todotxt.NewTask(strings.Join(args[1:], " "))
 		handleError(err)
-		task.CreationDate = date.Now()
-		tasks = append(tasks, task)
+		tasks.Add(task)
 		err = todotxt.WriteFile(path, tasks)
 		handleError(err)
-		for i, t := range tasks {
-			fmt.Fprintf(os.Stdout, "%d %s\n", i, t.Render())
-		}
+		tasks.Fprint(os.Stdout)
 
 	case "sort":
 		sort.Sort(todotxt.ByString(tasks))
@@ -68,9 +63,7 @@ func main() {
 		handleError(err)
 
 	case "list":
-		for i, t := range tasks {
-			fmt.Fprintf(os.Stdout, "%d %s\n", i, t.Render())
-		}
+		tasks.Fprint(os.Stdout)
 	}
 }
 
