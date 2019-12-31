@@ -57,7 +57,8 @@ func (t *Token) MarshalText() (text []byte, err error) {
 	case ContextTag:
 		text = append(contextTag, t.Value...)
 	case KeyValueTag:
-		text = append(keyValueTag, t.Value...)
+		text = append(t.Key, keyValueTag...)
+		text = append(text, t.Value...)
 	default:
 		text = t.Value
 	}
