@@ -13,17 +13,20 @@ import (
 )
 
 var (
-	// Regular expresions used to parse project, context and key/value tags
-	projectTagRe  = regexp.MustCompile(` (\+\S*)`)
-	contextTagRe  = regexp.MustCompile(` (\@\S*)`)
-	keyValueTagRe = regexp.MustCompile(` (\S+[^:]):(\S+)`)
-
+	lineFeed = []byte("\n")
 	// Regular expresion used to parse priority
 	priorityRe = regexp.MustCompile(`^^\(([A-Z])\){1} `)
 
 	// Regular expresion used to parse date
 	dateRe = regexp.MustCompile(`^([0-9]{2,4}-[0-9]{2}-[0-9]{2}){1} `)
 )
+
+// DecodeTask decodes a Task from given string s.
+func DecodeTask(s string) (task *Task, err error) {
+	task = new(Task)
+	err = task.UnmarshalText([]byte(s))
+	return task, err
+}
 
 // Task represents a task.
 type Task struct {
@@ -134,6 +137,10 @@ func (tasks Tasks) Encode(w io.Writer) error {
 			return err
 		}
 		_, err = w.Write(b)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(lineFeed)
 		if err != nil {
 			return err
 		}

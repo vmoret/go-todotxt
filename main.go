@@ -43,29 +43,31 @@ func main() {
 	if len(args) == 0 {
 		args = []string{"list"}
 	}
-	argc := len(args)
+	// argc := len(args)
+
+	tasks, err := todotxt.ReadFile(path)
+	handleError(err)
 
 	switch action := strings.ToLower(args[0]); action {
 	case "add":
-		switch argc {
-		}
+		s := strings.Join(args[1:], " ")
+		task, err := todotxt.DecodeTask(s)
+		handleError(err)
+		tasks = append(tasks, task)
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
+		fallthrough
+
 	case "list":
-		f, err := os.Open(path)
-		switch {
-		case os.IsNotExist(err):
-			return
-		case err != nil:
-			fmt.Fprintln(os.Stderr, err.Error())
-			return
-		}
-		defer f.Close()
-		tasks := make(todotxt.Tasks, 0)
-		if err := tasks.Decode(f); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to decode tasks, %v", err)
-			return
-		}
 		for i, t := range tasks {
 			fmt.Fprintf(os.Stdout, "%d %s\n", i, t)
 		}
+	}
+}
+
+func handleError(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v", err)
+		os.Exit(1)
 	}
 }
