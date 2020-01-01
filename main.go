@@ -11,6 +11,7 @@ import (
 
 	"github.com/pborman/getopt/v2"
 	"github.com/vmoret/todotxt/pkg/todotxt"
+	"github.com/vmoret/todotxt/pkg/todotxt/priority"
 )
 
 const (
@@ -66,6 +67,28 @@ func main() {
 		i, err := strconv.Atoi(args[1])
 		handleError(err)
 		tasks[i].MarkCompleted()
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
+
+	case "pri":
+		if argc < 3 {
+			fmt.Println("Missing task number and/or priority")
+			os.Exit(1)
+		}
+		i, err := strconv.Atoi(args[1])
+		handleError(err)
+		tasks[i].SetPriority(priority.Priority(args[2][0]))
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
+
+	case "depri":
+		if argc == 1 {
+			fmt.Println("Missing task number")
+			os.Exit(1)
+		}
+		i, err := strconv.Atoi(args[1])
+		handleError(err)
+		tasks[i].SetPriority(priority.ZeroPriority)
 		err = todotxt.WriteFile(path, tasks)
 		handleError(err)
 
