@@ -64,7 +64,7 @@ func main() {
 			fmt.Println("Missing task number and/or task description")
 			os.Exit(1)
 		}
-		i, err := strconv.Atoi(args[1])
+		i, err := getTaskNr(args, 1)
 		handleError(err)
 		s := strings.Join(args[2:], " ")
 		err = tasks[i].SetDescription(tasks[i].Description() + " " + s)
@@ -77,7 +77,7 @@ func main() {
 			fmt.Println("Missing task number")
 			os.Exit(1)
 		}
-		i, err := strconv.Atoi(args[1])
+		i, err := getTaskNr(args, 1)
 		handleError(err)
 		tasks[i].MarkCompleted()
 		err = todotxt.WriteFile(path, tasks)
@@ -88,7 +88,7 @@ func main() {
 			fmt.Println("Missing task number and/or priority")
 			os.Exit(1)
 		}
-		i, err := strconv.Atoi(args[1])
+		i, err := getTaskNr(args, 1)
 		handleError(err)
 		tasks[i].SetPriority(priority.Priority(args[2][0]))
 		err = todotxt.WriteFile(path, tasks)
@@ -99,7 +99,7 @@ func main() {
 			fmt.Println("Missing task number")
 			os.Exit(1)
 		}
-		i, err := strconv.Atoi(args[1])
+		i, err := getTaskNr(args, 1)
 		handleError(err)
 		tasks[i].SetPriority(priority.ZeroPriority)
 		err = todotxt.WriteFile(path, tasks)
@@ -113,6 +113,14 @@ func main() {
 	case "list":
 		tasks.Fprint(os.Stdout)
 	}
+}
+
+func getTaskNr(args []string, i int) (int, error) {
+	i, err := strconv.Atoi(args[i])
+	if err != nil {
+		return -1, err
+	}
+	return i + 1, nil
 }
 
 func handleError(err error) {

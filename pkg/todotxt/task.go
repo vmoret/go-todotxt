@@ -206,7 +206,7 @@ func (tasks *Tasks) Add(task *Task) {
 // Fprint prints the tasks to given writer
 func (tasks Tasks) Fprint(w io.Writer) {
 	for i, t := range tasks {
-		fmt.Fprintf(w, "%d %s\n", i, t.Render())
+		fmt.Fprintf(w, "%d %s\n", i+1, t.Render())
 	}
 }
 
