@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pborman/getopt/v2"
@@ -43,7 +44,7 @@ func main() {
 	if len(args) == 0 {
 		args = []string{"list"}
 	}
-	// argc := len(args)
+	argc := len(args)
 
 	tasks, err := todotxt.ReadFile(path)
 	handleError(err)
@@ -56,6 +57,17 @@ func main() {
 		err = todotxt.WriteFile(path, tasks)
 		handleError(err)
 		tasks.Fprint(os.Stdout)
+
+	case "do":
+		if argc == 1 {
+			fmt.Println("Missing task number")
+			os.Exit(1)
+		}
+		i, err := strconv.Atoi(args[1])
+		handleError(err)
+		tasks[i].MarkCompleted()
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
 
 	case "sort":
 		sort.Sort(todotxt.ByString(tasks))
