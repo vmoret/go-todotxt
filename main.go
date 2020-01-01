@@ -59,6 +59,19 @@ func main() {
 		handleError(err)
 		tasks.Fprint(os.Stdout)
 
+	case "append":
+		if argc < 3 {
+			fmt.Println("Missing task number and/or task description")
+			os.Exit(1)
+		}
+		i, err := strconv.Atoi(args[1])
+		handleError(err)
+		s := strings.Join(args[2:], " ")
+		err = tasks[i].SetDescription(tasks[i].Description() + " " + s)
+		handleError(err)
+		err = todotxt.WriteFile(path, tasks)
+		handleError(err)
+
 	case "do":
 		if argc == 1 {
 			fmt.Println("Missing task number")

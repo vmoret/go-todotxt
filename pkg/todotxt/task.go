@@ -65,6 +65,20 @@ func (t *Task) SetPriority(p priority.Priority) error {
 	return nil
 }
 
+// Description returns the task description.
+func (t *Task) Description() string {
+	b, err := t.description.MarshalText()
+	if err != nil {
+		return err.Error()
+	}
+	return string(b)
+}
+
+// SetDescription sets the task description.
+func (t *Task) SetDescription(s string) error {
+	return t.description.UnmarshalText([]byte(s))
+}
+
 // Validate a task
 func (t *Task) Validate() error {
 	if err := t.priority.Validate(); err != nil {
